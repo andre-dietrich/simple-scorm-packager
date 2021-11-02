@@ -1,5 +1,5 @@
 {
-  "name": "simple-scorm-packager",
+  "name": "@liascript/simple-scorm-packager",
   "version": "0.2.5",
   "description": "Simple way to package your scorm projects",
   "main": "lib/index.js",
