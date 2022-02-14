@@ -1,4 +1,4 @@
-`version 0.2.5`
+`version 0.2.6`
 
 ## Documentation
 
@@ -101,6 +101,7 @@ If you are packaging a project which utilizes npm and has a package.json file, f
     package: {
       version: process.env.npm_package_version,
       zip: true,
+      // filename: "scorm.zip" optional parameter to overwrite filename generation
       author: 'Firstname Lastname',
       outputFolder: path.join(__dirname, 'scorm_packages'),
       description: 'A test of the course packaging module',
