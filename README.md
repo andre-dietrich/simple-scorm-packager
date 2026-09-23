@@ -1,4 +1,4 @@
-`version 0.2.6`
+`version 0.3.1`
 
 ## Documentation
 
@@ -9,10 +9,15 @@ Creates SCORM package from source directory.
     * SCORM 2004 3rd Edition
     * SCORM 2004 4th Edition
 
+The packager returns a promise and performs no filesystem access of its own:
+every read and write goes through a storage adapter, which defaults to Node's
+filesystem. Supplying your own adapter lets it run in a browser — see
+[Running in a browser](#running-in-a-browser).
+
 ## Installation
 
 ```bash
-npm install simple-scorm-packager
+npm install @liascript/simple-scorm-packager
 ```
 
 ## Initialization Options Object
@@ -30,11 +35,12 @@ npm install simple-scorm-packager
 * `masteryScore` {number} [80]
 * `startingPage` {string} ['index.html']
 * `source` {string} ['./'] The path to files from which the package will be created
+* `fs` {object} [Node adapter] Storage adapter used for all reads and writes. Omit it to use the filesystem — see [Running in a browser](#running-in-a-browser)
 * `package` {object} Available options:
     * `zip` {boolean} [false] Archives package (`NAME_VERSION_DATE.zip`)
     * `appendTimeToOutput` {boolean} [false] Add full Unix time milliseconds to the zip file output, so repeated builds are unique (`NAME_VERSION_DATE_TIMESTAMP.zip`)
     * `outputFolder` {string} ['./scorm'] The folder path where you want the zip file
-    * `size` {number} [null] Provide the package size in bytes, automatically calculated when not set,
+    * `size` {number} [''] Provide the package size in bytes; when not set, it is calculated by summing the source directory
     * `name` {string} [\`{$title}\`] Package name, defaults to scorm title
     * `author` {string} [''] Author name, used as default for vcard if not provided
     * `version` {string} [process.env.npm_package_version || '1.0.0'] Package version
@@ -60,10 +66,13 @@ npm install simple-scorm-packager
 
 ## Programatic usage
 
-```javascript
-  var scopackager = require('simple-scorm-packager');
+`scopackager` is async. Await it (or use `.then`) — the promise resolves once
+the package, and the zip if requested, have been fully written.
 
-  scopackager({
+```javascript
+  var scopackager = require('@liascript/simple-scorm-packager');
+
+  await scopackager({
     version: '2004 4th Edition',
     organization: 'Test Company',
     title: 'Test Course',
@@ -77,8 +86,6 @@ npm install simple-scorm-packager
       zip: true,
       outputFolder: './scormPackages'
     }
-  }, function(msg){
-    console.log(msg);
   });
 ```
 
@@ -87,7 +94,7 @@ If you are packaging a project which utilizes npm and has a package.json file, f
 1. Create a JavaScript file (typically at the root of your project in the same directory as package.json) `scoPackager.js`
 2. The file should contain code to execute this package. Example:
 ```javascript
-  var scopackager = require('simple-scorm-packager');
+  var scopackager = require('@liascript/simple-scorm-packager');
   var path = require('path');
 
   const config = {
@@ -119,13 +126,60 @@ If you are packaging a project which utilizes npm and has a package.json file, f
     }
   };
 
-  scopackager(config, function(msg){
-    console.log(msg);
+  scopackager(config).then(function () {
     process.exit(0);
   });
 ```
 3. In the scripts portion of your package.json, add the following: `"package-scorm": "node scoPackager.js"` (replace the .js file name with the name (and path) of the file containing your script from step 2)
 4. You can now package your project for SCORM by running `npm run package-scorm` from the command line.
+
+## Running in a browser
+
+All filesystem access goes through the adapter passed as `fs`. When it is
+omitted, a Node adapter backed by `fs-extra` and `archiver` is used, and those
+modules are required lazily — so a browser bundle that supplies its own adapter
+pulls in neither.
+
+An adapter implements:
+
+| Member | Signature | Notes |
+|---|---|---|
+| `readFile` | `(file) => Promise<Buffer \| Uint8Array>` | |
+| `writeFile` | `(file, content) => Promise<void>` | creates parent directories |
+| `copyFile` | `(src, dest) => Promise<void>` | creates parent directories |
+| `ensureDir` | `(dir) => Promise<void>` | |
+| `readDir` | `(dir) => Promise<string[]>` | immediate children only |
+| `isDirectory` | `(target) => Promise<boolean>` | |
+| `size` | `(file) => Promise<number>` | |
+| `zip` | `(dir, destination) => Promise<number>` | returns bytes written |
+| `assetRoot` | `string` | a property, not a method |
+
+`assetRoot` is the directory holding this package's own `schemas/`. Under Node
+it is resolved from `__dirname`, so leave it unset; a bundled build has no
+`__dirname` and must point it at wherever those files were seeded.
+
+```javascript
+  import scopackager from '@liascript/simple-scorm-packager';
+
+  const store = new Map();
+
+  await scopackager({
+    version: '1.2',
+    organization: 'Test Company',
+    title: 'Test Course',
+    source: '/course',
+    fs: {
+      assetRoot: '/assets',
+      readFile: async (file) => store.get(file),
+      writeFile: async (file, content) => { store.set(file, content); },
+      // ...remaining members
+    },
+    package: { zip: true, outputFolder: '/out' }
+  });
+```
+
+Because `zip` returns the bytes rather than writing a stream, a browser adapter
+can hand the archive straight to a download.
 
 ## USE IT AS CLI
 if installed globally you can use it directly in command line
