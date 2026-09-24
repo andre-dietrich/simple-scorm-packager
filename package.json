@@ -1,7 +1,7 @@
 {
   "name": "@liascript/simple-scorm-packager",
   "version": "0.3.1",
-  "description": "Simple way to package your scorm projects",
+  "description": "Simple way to package your scorm projects, in Node or the browser",
   "main": "lib/index.js",
   "bin": {
     "simple-scorm-packager": "./cli.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lmihaidaniel/simple-scorm-packager.git"
+    "url": "git+https://github.com/andre-dietrich/simple-scorm-packager.git"
   },
   "keywords": [
     "lms",
@@ -22,12 +22,16 @@
     "interactive",
     "package"
   ],
-  "author": "lmihaidaniel <lacatusu.mihai.daniel@gmail.com>",
+  "author": "André Dietrich",
+  "contributors": [
+    "jh-488",
+    "lmihaidaniel <lacatusu.mihai.daniel@gmail.com> (original author)"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lmihaidaniel/simple-scorm-packager/issues"
+    "url": "https://github.com/andre-dietrich/simple-scorm-packager/issues"
   },
-  "homepage": "https://github.com/lmihaidaniel/simple-scorm-packager#readme",
+  "homepage": "https://github.com/andre-dietrich/simple-scorm-packager#readme",
   "dependencies": {
     "fs-extra": "^10.0.0",
     "jsonschema": "^1.4.0",
