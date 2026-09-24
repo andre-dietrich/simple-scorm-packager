@@ -4,8 +4,8 @@
   "description": "Simple way to package your scorm projects, in Node or the browser",
   "main": "lib/index.js",
   "bin": {
-    "simple-scorm-packager": "./cli.js",
-    "scopackager": "./cli.js"
+    "simple-scorm-packager": "cli.js",
+    "scopackager": "cli.js"
   },
   "preferGlobal": true,
   "scripts": {
